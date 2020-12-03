@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$nugetVersion$</version>
+    <title>$title$</title>
+    <authors>Haato</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Haato3o/HunterPie</projectUrl>
+    <repository type="git" url="https://github.com/$repo$.git" />
+    <releaseNotes>First package since Core library was moved from the main application</releaseNotes>
+    <description>Hunter Pie core library</description>
+    <copyright>$copyright$</copyright>
+    <dependencies>
+      <group targetFramework=".NETFramework4.8" />
+    </dependencies>
+  </metadata>
+</package>
