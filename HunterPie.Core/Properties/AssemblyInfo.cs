@@ -8,7 +8,7 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("HunterPie.Core")]
-[assembly: AssemblyDescription("HunterPie core logic")]
+[assembly: AssemblyDescription("Core library for Hunter Pie and plugins")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Haato")]
 [assembly: AssemblyProduct("HunterPie.Core")]

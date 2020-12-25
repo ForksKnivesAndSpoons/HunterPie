@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("HunterPie.UI")]
-[assembly: AssemblyDescription("HunterPie GUI styles & widgets logic")]
+[assembly: AssemblyDescription("Library for Hunter Pie UI elements")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Haato")]
 [assembly: AssemblyProduct("HunterPie.UI")]
