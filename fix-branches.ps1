@@ -7,7 +7,7 @@ $tag=$($parts -join '-')
 
 git fetch upstream master
 git reset --hard FETCH_HEAD
-git cherry-pick ci~2^..ci
+git cherry-pick ci~3..ci
 git push --force
 
 git checkout ci
