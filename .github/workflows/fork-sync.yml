@@ -17,7 +17,7 @@ jobs:
     - name: Sync ${{ matrix.branch }}
       uses: tgymnich/fork-sync@v1.2
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.FORKSYNC }}
         owner: Haato3o
         base: ${{ matrix.branch }}
         head: ${{ matrix.branch }}
