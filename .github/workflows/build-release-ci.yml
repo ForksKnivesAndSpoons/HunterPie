@@ -1,41 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow will build, test, sign and package a WPF or Windows Forms desktop application
-# built on .NET Core.
-# To learn how to migrate your existing application to .NET Core,
-# refer to https://docs.microsoft.com/en-us/dotnet/desktop-wpf/migration/convert-project-from-net-framework
-#
-# To configure this workflow:
-#
-# 1. Configure environment variables
-# GitHub sets default environment variables for every workflow run.
-# Replace the variables relative to your project in the "env" section below.
-#
-# 2. Signing
-# Generate a signing certificate in the Windows Application
-# Packaging Project or add an existing signing certificate to the project.
-# Next, use PowerShell to encode the .pfx file using Base64 encoding
-# by running the following Powershell script to generate the output string:
-#
-# $pfx_cert = Get-Content '.\SigningCertificate.pfx' -Encoding Byte
-# [System.Convert]::ToBase64String($pfx_cert) | Out-File 'SigningCertificate_Encoded.txt'
-#
-# Open the output file, SigningCertificate_Encoded.txt, and copy the
-# string inside. Then, add the string to the repo as a GitHub secret
-# and name it "Base64_Encoded_Pfx."
-# For more information on how to configure your signing certificate for
-# this workflow, refer to https://github.com/microsoft/github-actions-for-desktop-apps#signing
-#
-# Finally, add the signing certificate password to the repo as a secret and name it "Pfx_Key".
-# See "Build the Windows Application Packaging project" below to see how the secret is used.
-#
-# For more information on GitHub Actions, refer to https://github.com/features/actions
-# For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
-# refer to https://github.com/microsoft/github-actions-for-desktop-apps
-
 name: Hunter Pie CI
 
 on:
@@ -44,9 +6,6 @@ on:
       - master
       - development
     types: [closed]
-  push:
-    tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 defaults:
   run:
@@ -55,48 +14,15 @@ defaults:
 jobs:
 
   build:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
-    strategy:
-      matrix:
-        configuration: [Release, Debug]
-
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
-    env:
-      Solution_Name: HunterPie.sln                                # Replace with your solution name, i.e. MyWpfApp.sln.
-      # Test_Project_Path: your-test-project-path                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      # Wap_Project_Directory: your-wap-project-directory-name    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
-      # Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
-
-    outputs:
-      git_tag: ${{ steps.set_ref.outputs.git_tag }}
+    if: github.event.pull_request.merged == true
+    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: windows-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    
-    # TODO: use versions in assembly info files
-    - id: set_ref
-      run: |
-        GIT_REF=${GITHUB_REF##*/}
-        if [[ $GIT_REF == v* ]]
-        then
-          GIT_TAG=$GIT_REF
-        else
-          GIT_TAG=$(git describe --first-parent --abbrev=0)
-        fi
-
-        if [[ $GITHUB_BASE_REF == "development" ]]
-        then
-          SUFFIX="-beta"
-        fi
-
-        REV_COUNT=$(git rev-list $GIT_TAG..HEAD --count)
-        echo "git_tag=$GIT_TAG.$REV_COUNT$SUFFIX" >> $GITHUB_ENV
-        echo "::set-output name=git_tag::$GIT_TAG.$REV_COUNT$SUFFIX"
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -108,34 +34,43 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
-    # # Execute all unit tests in the solution
-    # - name: Execute unit tests
-    #   run: dotnet test
-
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the applications
       shell: pwsh
-      run: msbuild $env:Solution_Name -m /t:Restore /p:Configuration=$env:Configuration
+      run: msbuild -m /t:Restore
       env:
-        Configuration: ${{ matrix.configuration }}
 
     - name: Build the apps
       shell: pwsh
-      run: msbuild $env:Solution_Name -m /p:Configuration=$env:Configuration
+      run: msbuild -m /p:Configuration=Release
       env:
-        Configuration: ${{ matrix.configuration }}
   
     # Upload the builds for next job and debugging
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         # Don't know if this should be unique to the tag/branch/PR
-        name: Hunter Pie ${{ matrix.configuration }}
+        name: Hunter Pie Release
         path: ./**/bin/*
 
-  release:
+  pre-release:
     needs: build
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+        - project: "HunterPie"
+          prefix: "hp"
+          binary: "exe"
+        - project: "HunterPie.Core"
+          prefix: "core"
+          binary: "dll"
+        - project: "HunterPie.UI"
+          prefix: "ui"
+          binary: "dll"
+        - project: "Update"
+          prefix: "up"
+          binary: "exe"
     
     steps:
     - name: Checkout
@@ -148,39 +83,161 @@ jobs:
       with:
         name: Hunter Pie Release
 
+    - name: Determine new tag
+      env:
+        PROJECT: ${{ matrix.project }}
+        PREFIX: ${{ matrix.prefix }}
+        BINARY: ${{ matrix.binary }}
+      run: |
+        if [[ $GITHUB_BASE_REF == "development" ]]
+        then
+          SUFFIX="-beta"
+        fi
+
+        VERSION=$(cat $PROJECT/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
+        if [ "$BINARY" = "dll" ]
+        then
+          VERSION=$(echo $VERSION | sed -r 's/(.*)\./\1-/')
+        fi
+        PREVIOUS=$(git describe --match "$PREFIX$VERSION-[0-9]*$SUFFIX" --tags 2> /dev/null)
+
+        if [ -z "$PREVIOUS" ]
+        then
+          GIT_TAG="$PREFIX$VERSION-0$SUFFIX"
+        else
+          if [ -n "$(git diff --name-only $PREVIOUS..HEAD -- $PROJECT/)" ]
+          then
+            bump=$(echo ${PREVIOUS%-beta} | rev | cut -d'-' -f1)
+            ((bump++))
+            GIT_TAG="$PREFIX$VERSION-$bump$SUFFIX"
+          fi
+        fi
+
+        echo "$GIT_TAG" >> version
+        echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
+
+    - name: Prep binaries for release
+      if: env.GIT_TAG != ""
+      env:
+        PROJECT: ${{ matrix.project }}
+      run: |
+        mkdir zip
+        cp -r $PROJECT/bin/Release zip/HunterPie
+        cd zip
+        7z a -tzip $PROJECT.zip HunterPie/* -r
+
+    - name: Pre-Release
+      if: env.GIT_TAG != ""
+      env:
+        PROJECT: ${{ matrix.project }}
+        BINARY: ${{ matrix.binary }}
+      run: |
+        if [ "$BINARY" = "dll" ]
+        then
+          BIN="zip/HunterPie/$PROJECT.dll"
+        else
+          BIN="zip/$PROJECT.zip"
+        fi
+
+        gh release create $GIT_TAG --title "Release $GIT_TAG" --prerelease $BIN
+
+    - name: Push to NuGet
+      if: env.GIT_TAG != "" && matrix.binary == "dll"
+      env:
+        PROJECT: ${{ matrix.project }}
+      run: |
+        nuget sources add -name "Github" \
+              -Source https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json \
+              -Username $GITHUB_REPOSITORY_OWNER \
+              -Password $GITHUB_TOKEN
+        version=$(echo $GIT_TAG | | grep -o '[0-9].*')
+        nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version"
+        nuget push $PROJECT.$version.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
+
+    - name: Upload version as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.project }}_Version
+        path: ./version
+
+  release:
+    needs: pre-release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: Hunter Pie Release
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+
     - name: Zip Hunter Pie & Update
       run: |
         mkdir zip
         mv HunterPie/bin/Release zip/HunterPie
         mv -f Update/bin/Release/* zip/HunterPie
         cd zip
-        7z a -tzip HunterPie.zip HunterPie/* -r
+        zip -r HunterPie.zip HunterPie/
+        cd ..
+        mkdir bin
+        cp zip/HunterPie.zip HunterPie.Core/bin/Release/HunterPie.Core.dll HunterPie.UI/bin/Release/HunterPie.UI.dll bin
+
+    # This is embarassing
+    - name: Write release notes
+      run: |
+        touch notes.md
         
-    - name: Push to Nuget repo
-      run: |
-        nuget sources add -name "Github" \
-              -Source https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json \
-              -Username $GITHUB_REPOSITORY_OWNER \
-              -Password $GITHUB_TOKEN
-        version=$(echo $GIT_TAG | cut -d'v' -f 2)
-        nuget pack HunterPie.Core -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version"
-        nuget pack HunterPie.UI -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version"
+        HunterPie=$(cat HunterPie_Version/version)
+        Core=$(cat HunterPie.Core_Version/version)
+        UI=$(cat HunterPie.UI_Version/version)
+        Update=$(cat Update_Version/version)
 
-        for pkg in *.nupkg; do nuget push $pkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate; done
+        if [ -n "$HunterPie" ]
+        then
+          echo "HunterPie bumped up to $HunterPie" >> notes.md
+        fi
+        
+        if [ -n "$Core" ]
+        then
+          echo "HunterPie.Core bumped up to $Core" >> notes.md
+        fi
+        
+        if [ -n "$UI" ]
+        then
+          echo "HunterPie.UI bumped up to $UI" >> notes.md
+        fi
+        
+        if [ -n "$Update" ]
+        then
+          echo "Update bumped up to $Update" >> notes.md
+        fi
+
+    - name: Create release with binaries
+      run: |
+        if [[ $GITHUB_BASE_REF == "development" ]]
+        then
+          SUFFIX="-beta"
+          prerelease="-p"
+        fi
+
+        ASSEMBLY_VERSION=$(cat HunterPie/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
+        PREVIOUS=$(git describe --match "v$ASSEMBLY_VERSION-[0-9]*$SUFFIX" --tags 2> /dev/null)
+        if [ -z "$PREVIOUS" ]
+        then
+          GIT_TAG="v$ASSEMBLY_VERSION-0$SUFFIX"
+        else
+          bump=$(echo ${PREVIOUS%-beta} | rev | cut -d'-' -f1)
+          ((bump++))
+          GIT_TAG="v$ASSEMBLY_VERSION-$bump$SUFFIX"
+        fi
+
+        gh release create $GIT_TAG --title "Release $GIT_TAG" --notes-file notes.md $prerelease bin/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        GIT_TAG: ${{ needs.build.outputs.git_tag }}
-
-    - name: Update release with binaries
-      # this is a workaround because actions/upload-release-asset isn't allowed multiple times
-      # this looks neater, though
-      # https://hub.github.com/hub-release.1.html
-      run: |
-        hub release create $GIT_TAG --message "Release $GIT_TAG"
-        hub release edit   $GIT_TAG -m "" -a zip/HunterPie.zip
-        hub release edit   $GIT_TAG -m "" -a HunterPie.Core/bin/Release/HunterPie.Core.dll
-        hub release edit   $GIT_TAG -m "" -a HunterPie.UI/bin/Release/HunterPie.UI.dll
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GIT_TAG: ${{ needs.build.outputs.git_tag }}
