@@ -1,0 +1,241 @@
+name: Hunter Pie CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - development
+    types: [closed]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  build:
+    if: github.event.pull_request.merged == true
+    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+
+    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    # Restore the application to populate the obj folder with RuntimeIdentifiers
+    - name: Restore the applications
+      shell: pwsh
+      run: msbuild -m /t:Restore
+
+    - name: Build the apps
+      shell: pwsh
+      run: msbuild -m /p:Configuration=Release
+  
+    # Upload the builds for next job and debugging
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        # Don't know if this should be unique to the tag/branch/PR
+        name: Hunter Pie Release
+        path: ./**/bin/*
+
+  pre-release:
+    needs: build
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+        - project: "HunterPie"
+          prefix: "hp"
+          binary: "exe"
+        - project: "HunterPie.Core"
+          prefix: "core"
+          binary: "dll"
+        - project: "HunterPie.UI"
+          prefix: "ui"
+          binary: "dll"
+        - project: "Update"
+          prefix: "up"
+          binary: "exe"
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: Hunter Pie Release
+
+    - name: Determine new tag
+      env:
+        PROJECT: ${{ matrix.project }}
+        PREFIX: ${{ matrix.prefix }}
+        BINARY: ${{ matrix.binary }}
+      run: |
+        if [[ $GITHUB_BASE_REF == "development" ]]
+        then
+          SUFFIX="-beta"
+        fi
+
+        VERSION=$(cat $PROJECT/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
+        if [ "$BINARY" = "dll" ]
+        then
+          VERSION=$(echo $VERSION | sed -r 's/(.*)\./\1-/')
+        fi
+        PREVIOUS=$(git describe --match "$PREFIX$VERSION-[0-9]*$SUFFIX" --tags 2> /dev/null)
+
+        if [ -z "$PREVIOUS" ]
+        then
+          GIT_TAG="$PREFIX$VERSION-0$SUFFIX"
+        else
+          if [ -n "$(git diff --name-only $PREVIOUS..HEAD -- $PROJECT/)" ]
+          then
+            bump=$(echo ${PREVIOUS%-beta} | rev | cut -d'-' -f1)
+            ((bump++))
+            GIT_TAG="$PREFIX$VERSION-$bump$SUFFIX"
+          fi
+        fi
+
+        echo "$GIT_TAG" >> version
+        echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
+
+    - name: Prep binaries for release
+      if: env.GIT_TAG != ''
+      env:
+        PROJECT: ${{ matrix.project }}
+      run: |
+        mkdir zip
+        cp -r $PROJECT/bin/Release zip/HunterPie
+        cd zip
+        7z a -tzip $PROJECT.zip HunterPie/* -r
+
+    - name: Pre-Release
+      if: env.GIT_TAG != ''
+      env:
+        PROJECT: ${{ matrix.project }}
+        BINARY: ${{ matrix.binary }}
+      run: |
+        if [ "$BINARY" = "dll" ]
+        then
+          BIN="zip/HunterPie/$PROJECT.dll"
+        else
+          BIN="zip/$PROJECT.zip"
+        fi
+
+        gh release create $GIT_TAG --title "Release $GIT_TAG" --prerelease $BIN
+
+    - name: Push to NuGet
+      if: env.GIT_TAG != '' && matrix.binary == 'dll'
+      env:
+        PROJECT: ${{ matrix.project }}
+      run: |
+        nuget sources add -name "Github" \
+              -Source https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json \
+              -Username $GITHUB_REPOSITORY_OWNER \
+              -Password $GITHUB_TOKEN
+        version=$(echo $GIT_TAG | | grep -o '[0-9].*')
+        nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version"
+        nuget push $PROJECT.$version.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
+
+    - name: Upload version as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.project }}_Version
+        path: ./version
+
+  release:
+    needs: pre-release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: Hunter Pie Release
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Zip Hunter Pie & Update
+      run: |
+        mkdir zip
+        mv HunterPie/bin/Release zip/HunterPie
+        mv -f Update/bin/Release/* zip/HunterPie
+        cd zip
+        zip -r HunterPie.zip HunterPie/
+        cd ..
+        mkdir bin
+        cp zip/HunterPie.zip HunterPie.Core/bin/Release/HunterPie.Core.dll HunterPie.UI/bin/Release/HunterPie.UI.dll bin
+
+    # This is embarassing
+    - name: Write release notes
+      run: |
+        touch notes.md
+        
+        HunterPie=$(cat HunterPie_Version/version)
+        Core=$(cat HunterPie.Core_Version/version)
+        UI=$(cat HunterPie.UI_Version/version)
+        Update=$(cat Update_Version/version)
+
+        if [ -n "$HunterPie" ]
+        then
+          echo "HunterPie bumped up to $HunterPie" >> notes.md
+        fi
+        
+        if [ -n "$Core" ]
+        then
+          echo "HunterPie.Core bumped up to $Core" >> notes.md
+        fi
+        
+        if [ -n "$UI" ]
+        then
+          echo "HunterPie.UI bumped up to $UI" >> notes.md
+        fi
+        
+        if [ -n "$Update" ]
+        then
+          echo "Update bumped up to $Update" >> notes.md
+        fi
+
+    - name: Create release with binaries
+      run: |
+        if [[ $GITHUB_BASE_REF == "development" ]]
+        then
+          SUFFIX="-beta"
+          prerelease="-p"
+        fi
+
+        ASSEMBLY_VERSION=$(cat HunterPie/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
+        PREVIOUS=$(git describe --match "v$ASSEMBLY_VERSION-[0-9]*$SUFFIX" --tags 2> /dev/null)
+        if [ -z "$PREVIOUS" ]
+        then
+          GIT_TAG="v$ASSEMBLY_VERSION-0$SUFFIX"
+        else
+          bump=$(echo ${PREVIOUS%-beta} | rev | cut -d'-' -f1)
+          ((bump++))
+          GIT_TAG="v$ASSEMBLY_VERSION-$bump$SUFFIX"
+        fi
+
+        gh release create $GIT_TAG --title "Release $GIT_TAG" --notes-file notes.md $prerelease bin/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
