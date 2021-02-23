@@ -170,10 +170,22 @@
     <DrawingImage x:Key="ICON_WARN">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="{StaticResource CONSOLE_WINDOWBAR_BACKGROUND}"
-                                 Geometry="M14.335,14.465c0,0-3.516-3.422-4.887-7.355V6.039h11.168V7.11c-1.782,4.343-4.887,7.355-4.887,7.355H14.335z" />
                 <GeometryDrawing Brush="{StaticResource CONSOLE_ACCENT_COLOR}"
                                  Geometry="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    <DrawingImage x:Key="ICON_SEARCH">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="{StaticResource BUTTON_ICON_FOREGROUND}"
+                                 Geometry="M335.165,292.071l-81.385-84.077c-5.836-6.032-13.13-8.447-16.29-5.363
+		c-3.171,3.062-10.47,0.653-16.306-5.379l-1.164-1.207c36.425-47.907,32.89-116.499-10.851-160.24
+		c-47.739-47.739-125.142-47.739-172.875,0c-47.739,47.739-47.739,125.131,0,172.87c44.486,44.492,114.699,47.472,162.704,9.045
+		l0.511,0.533c5.825,6.032,7.995,13.402,4.814,16.469c-3.166,3.068-1.012,10.443,4.83,16.464l81.341,84.11
+		c5.836,6.016,15.452,6.195,21.49,0.354l22.828-22.088C340.827,307.735,340.99,298.125,335.165,292.071z M182.306,181.81
+		c-32.852,32.857-86.312,32.857-119.159,0.011c-32.852-32.852-32.847-86.318,0-119.164c32.847-32.852,86.307-32.847,119.148,0.005
+		C215.152,95.509,215.152,148.964,182.306,181.81z" />
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
@@ -391,6 +403,7 @@
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
+    <Cursor x:Key="CURSOR_MAGNIFY">pack://siteoforigin:,,,/HunterPie.Resources/UI/magnifying-glass-white.cur</Cursor>
     <!-- Styles -->
     <Style x:Key="WidgetStyle" TargetType="{x:Type Window}">
         <Style.Triggers>
