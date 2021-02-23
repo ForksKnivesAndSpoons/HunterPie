@@ -39,7 +39,7 @@ jobs:
     - name: Build the apps
       shell: pwsh
       run: msbuild -m /p:Configuration=Release
-  
+
     # Upload the builds for next job and debugging
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
@@ -50,7 +50,7 @@ jobs:
 
   pre-release:
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -66,7 +66,7 @@ jobs:
         - project: "Update"
           prefix: "up"
           binary: "exe"
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -111,6 +111,11 @@ jobs:
 
         gh release create $GIT_TAG --title "Release $GIT_TAG" --prerelease $BIN
 
+    - name: Setup NuGet.exe
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: latest
+
     - name: Push to NuGet
       if: env.GIT_TAG != '' && matrix.binary == 'dll'
       env:
@@ -134,7 +139,7 @@ jobs:
   release:
     needs: pre-release
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -164,7 +169,7 @@ jobs:
     - name: Write release notes
       run: |
         touch notes.md
-        
+
         HunterPie=$(cat HunterPie_Version/version)
         Core=$(cat HunterPie.Core_Version/version)
         UI=$(cat HunterPie.UI_Version/version)
@@ -174,17 +179,17 @@ jobs:
         then
           echo "HunterPie bumped up to $HunterPie" >> notes.md
         fi
-        
+
         if [ -n "$Core" ]
         then
           echo "HunterPie.Core bumped up to $Core" >> notes.md
         fi
-        
+
         if [ -n "$UI" ]
         then
           echo "HunterPie.UI bumped up to $UI" >> notes.md
         fi
-        
+
         if [ -n "$Update" ]
         then
           echo "Update bumped up to $Update" >> notes.md
