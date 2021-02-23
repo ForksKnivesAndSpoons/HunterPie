@@ -17,7 +17,7 @@ echo "Prerelease flag: $prerelease"
 version=$(cat HunterPie/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
 echo "Version: $version"
 
-previous=$(git describe --match "v$version-[0-9]*$suffix" --tags 2> /dev/null)
+previous=$(git describe --match "v$version-[0-9]*$suffix" --tags --abbrev=0 2> /dev/null)
 echo "Previous: $previous"
 if [ -z "$previous" ]
 then
