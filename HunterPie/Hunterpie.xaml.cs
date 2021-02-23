@@ -37,8 +37,9 @@ using HunterPie.Native;
 using HunterPie.Native.Connection;
 using ConfigManager = HunterPie.Core.ConfigManager;
 using HunterPie.Core.Settings;
+using HunterPie.UI.Infrastructure;
 using Overlay = HunterPie.GUI.Overlay;
-using HunterPie.Utils;
+using SettingsControl = HunterPie.GUIControls.Settings;
 
 namespace HunterPie
 {
@@ -103,12 +104,14 @@ namespace HunterPie
         public static readonly DependencyProperty IsDraggingProperty =
             DependencyProperty.Register("IsDragging", typeof(bool), typeof(Hunterpie));
 
+        public ICommand MaximizeCommand { get; }
+
         #endregion
 
         public Hunterpie()
         {
             Instance = this;
-            
+
             if (CheckIfItsRunningFromWinrar())
             {
                 MessageBox.Show("You must extract HunterPie files before running it, otherwise it will most likely crash due to missing files or not save your settings.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -116,6 +119,8 @@ namespace HunterPie
                 return;
             }
             CheckIfHunterPieOpen();
+
+            MaximizeCommand = new ArglessRelayCommand(() => WindowState = WindowState.Maximized);
 
             AppDomain.CurrentDomain.UnhandledException += ExceptionLogger;
 
@@ -197,7 +202,7 @@ namespace HunterPie
                     await httpGet.GetAsync("https://hunterpie.herokuapp.com/ping");
                 }
             } catch {serverUp = false; }
-            
+
             if (config.HunterPie.Update.Enabled && serverUp)
             {
                 bool justUpdated = false;
@@ -222,9 +227,7 @@ namespace HunterPie
                 }
                 if (justUpdated)
                 {
-                    UnclickButtons(ChangelogBtn.Parent as StackPanel, ChangelogBtn);
-                    ConsolePanel.Children.Clear();
-                    ConsolePanel.Children.Add(Changelog.Instance);
+                    ChangeConsoleChild(ChangelogBtn, Changelog.Instance);
                     return true;
                 }
                 if (latestVersion)
@@ -406,10 +409,10 @@ namespace HunterPie
             WindowState = WindowState.Normal;
             Focus();
 
-            ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(Settings.Instance);
-            UnclickButtons(SettingsBtn.Parent as StackPanel, SettingsBtn);
-            Settings.RefreshSettingsUI();
+            SettingsControl.Instantiate(PluginManager.PluginSettingsTabs);
+
+            ChangeConsoleChild(SettingsBtn, SettingsControl.Instance);
+            SettingsControl.RefreshSettingsUI();
         }
 
         private void OnTrayIconExitClick(object sender, EventArgs e) => Close();
@@ -547,7 +550,7 @@ namespace HunterPie
             SetAnimationsFramerate();
             HookEvents();
             Kernel.StartScanning(); // Scans game memory
-            
+
         }
 
         private void SetAnimationsFramerate() => Timeline.DesiredFrameRateProperty.OverrideMetadata(typeof(Timeline),
@@ -593,7 +596,7 @@ namespace HunterPie
                     };
                     NotificationsPanel.Children.Add(notification);
                 }
-                Settings.RefreshSettingsUI();
+                SettingsControl.RefreshSettingsUI();
             }));
         }
 
@@ -674,7 +677,7 @@ namespace HunterPie
             }));
 
             await Chat.SystemMessage("<STYL MOJI_LIGHTBLUE_DEFAULT><ICON SLG_NEWS>HunterPie Native</STYL>\nConnected.", -1, 0, 0);
-            
+
             ExportGameData();
         }
 
@@ -759,7 +762,15 @@ namespace HunterPie
                     await Client.Initialize();
                 }
                 else
-                    Debugger.Error("Failed to inject HunterPie.Native.dll");
+                {
+                    if (ConfigManager.Settings.HunterPie.EnableNativeFunctions)
+                        Debugger.Error("Failed to inject HunterPie.Native.dll");
+                    else
+                    {
+                        Debugger.Warn("Skipped HunterPie.Native.dll load");
+                    }
+                    return;
+                }
             }
             await Dispatcher.InvokeAsync(() =>
             {
@@ -810,7 +821,7 @@ namespace HunterPie
                 await overlay.Dispose().ContinueWith(task => game?.DestroyInstances());
                 overlay = null;
             });
-            
+
             if (config.HunterPie.Options.CloseWhenGameCloses)
             {
                 Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
@@ -853,7 +864,7 @@ namespace HunterPie
             AdministratorIconVisibility = IsRunningAsAdmin() ? Visibility.Visible : Visibility.Collapsed;
 
             Environment.CurrentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            
+
             WindowBlur.SetIsEnabled(this, true);
 
             Width = config.HunterPie.Width;
@@ -861,9 +872,7 @@ namespace HunterPie
             Top = config.HunterPie.PosY;
             Left = config.HunterPie.PosX;
 
-            ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(DebuggerControl.Instance);
-            UnclickButtons(ConsoleBtn.Parent as StackPanel, ConsoleBtn);
+            ChangeConsoleChild(ConsoleBtn, DebuggerControl.Instance);
 
             // Initialize everything under this line
             if (!await CheckIfUpdateEnableAndStart())
@@ -894,7 +903,6 @@ namespace HunterPie
             LoadData();
             Debugger.Warn(GStrings.GetLocalizationByXPath("/Console/String[@ID='MESSAGE_HUNTERPIE_INITIALIZED']"));
 
-            
             await pluginManager.PreloadPlugins();
             // Support message :)
             ShowSupportMessage();
@@ -976,7 +984,7 @@ namespace HunterPie
 
             Kernel.StopScanning();
 
-            Settings.Instance?.UninstallKeyboardHook();
+            SettingsControl.Instance?.UninstallKeyboardHook();
 
             // Unhook events
             if (game.Player != null)
@@ -984,7 +992,7 @@ namespace HunterPie
 
             UnhookEvents();
         }
-        
+
         private void OnLaunchGameButtonClick(object sender, RoutedEventArgs e) => LaunchGame();
 
         private void LaunchGame()
@@ -1195,33 +1203,48 @@ namespace HunterPie
 
         private void OnDebuggerButtonClick(object sender, MouseButtonEventArgs e)
         {
-            SideButton snd = (SideButton)sender;
-            StackPanel panel = snd.Parent as StackPanel;
-            UnclickButtons(panel, snd);
-
-            ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(DebuggerControl.Instance);
+            ChangeConsoleChild(sender, DebuggerControl.Instance);
         }
 
         private void OnSettingsButtonClick(object sender, MouseButtonEventArgs e)
         {
-            SideButton snd = (SideButton)sender;
-            StackPanel panel = snd.Parent as StackPanel;
-            UnclickButtons(panel, snd);
+            SettingsControl.Instantiate(PluginManager.PluginSettingsTabs);
 
-            ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(Settings.Instance);
-            Settings.RefreshSettingsUI();
+            ChangeConsoleChild(sender, SettingsControl.Instance);
+            SettingsControl.RefreshSettingsUI();
         }
 
         private void OnPluginsButtonClick(object sender, MouseButtonEventArgs e)
         {
-            SideButton snd = (SideButton)sender;
-            StackPanel panel = snd.Parent as StackPanel;
-            UnclickButtons(panel, snd);
+            ChangeConsoleChild(sender, PluginDisplay.Instance);
+        }
 
+        private void ChangeConsoleChild(object sender, UIElement newChild)
+        {
+            // if sender is button, depress all other buttons
+            if (sender is SideButton {Parent: StackPanel panel} snd)
+            {
+                UnclickButtons(panel, snd);
+            }
+
+            // notify previously activated views if any
+            foreach (UIElement child in ConsolePanel.Children)
+            {
+                if (child is IActivatable activatable)
+                {
+                    activatable.OnDeactivate();
+                }
+            }
+
+            // replace existing view with new one
             ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(PluginDisplay.Instance);
+            ConsolePanel.Children.Add(newChild);
+
+            // notify new view about activation
+            if (newChild is IActivatable activatableChild)
+            {
+                activatableChild.OnActivate();
+            }
         }
 
         private void OnBuildUploadButtonClick(object sender, MouseButtonEventArgs e)
@@ -1302,12 +1325,7 @@ namespace HunterPie
 
         private void OnChangelogButtonClick(object sender, MouseButtonEventArgs e)
         {
-            SideButton snd = (SideButton)sender;
-            StackPanel panel = snd.Parent as StackPanel;
-            UnclickButtons(panel, snd);
-
-            ConsolePanel.Children.Clear();
-            ConsolePanel.Children.Add(Changelog.Instance);
+            ChangeConsoleChild(sender, Changelog.Instance);
         }
 
         private void OnDiscordButtonClick(object sender, MouseButtonEventArgs e)
