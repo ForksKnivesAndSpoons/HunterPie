@@ -34,7 +34,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -100,7 +100,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>
     </CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <LangVersion>latest</LangVersion>
@@ -208,6 +208,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="GUIControls\SearchBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Hunterpie.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -228,6 +232,10 @@
     <Compile Include="GUIControls\Plugins.xaml.cs">
       <DependentUpon>Plugins.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GUIControls\SearchBar.xaml.cs">
+      <DependentUpon>SearchBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HunterPieXmlDataProvider.cs" />
     <Compile Include="Plugins\PluginEntry.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Plugins\PluginRegistryService.cs" />
@@ -758,11 +766,22 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Languages\en-us.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <Choose>
+    <When Condition=" '$(Configuration)'!='Release'">
+      <ItemGroup>
+        <EmbeddedResource Include="Languages\en-us.xml">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <None Include="Languages\en-us.xml">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
   <ItemGroup>
     <None Include="Languages\es-es.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -813,7 +832,29 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="HunterPie.Resources\UI\damage_plot.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="HunterPie.Resources\UI\magnifying-glass-white.cur">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <!--    <PostBuildEvent>"$(MSBuildBinPath)\msbuild.exe" "$(ProjectDir)..\..\Plugin.Sync\Plugin.Sync\Plugin.Sync.csproj"</PostBuildEvent>-->
+    <!--    <PostBuildEvent>-->
+    <!--      "$(MSBuildBinPath)\msbuild.exe" "E:\Dev\Amadare\Plugin.CrownGrinder\Plugin.CrownGrinder\Plugin.CrownGrinder.csproj"-->
+    <!--    </PostBuildEvent>-->
+    <!-- <PostBuildEvent>
+      "$(MSBuildBinPath)\msbuild.exe" "E:\Dev\Amadare\Plugin.MonsterSizeBar\Plugin.MonsterSizeBar\Plugin.MonsterSizeBar.csproj"
+    </PostBuildEvent> -->
+    <!--    <PostBuildEvent>py $(TargetDir)clean.py</PostBuildEvent>-->
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>py $(TargetDir)clean.py</PostBuildEvent>
   </PropertyGroup>

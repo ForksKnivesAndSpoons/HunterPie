@@ -17,3 +17,5 @@ dump
 dump.py
 
 *.nupkg
+.env
+
