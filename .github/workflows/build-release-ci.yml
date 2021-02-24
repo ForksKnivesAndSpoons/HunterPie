@@ -122,13 +122,16 @@ jobs:
         PROJECT: ${{ matrix.project }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        version=$(echo $GIT_TAG | grep -o '[0-9].*')
+        suffix=$(echo version | grep -o '\-beta' | tr "-" ".")
+        version=${version%-beta}
+
         nuget sources add -name "Github" \
               -Source https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json \
               -Username $GITHUB_REPOSITORY_OWNER \
               -Password $GITHUB_TOKEN
-        version=$(echo $GIT_TAG | grep -o '[0-9].*')
-        nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version"
-        nuget push $PROJECT.$version.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
+        nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version;id=$PROJECT$suffix"
+        nuget push $PROJECT$suffix.$version.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
 
     - name: Upload version as artifacts
       uses: actions/upload-artifact@v2
