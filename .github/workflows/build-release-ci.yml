@@ -95,6 +95,18 @@ jobs:
         cd zip
         7z a -tzip $PROJECT.zip HunterPie/* -r
 
+    - name: Setup NuGet.exe
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: latest
+
+    - name: Push to NuGet
+      if: env.GIT_TAG != '' && matrix.binary == 'dll'
+      env:
+        PROJECT: ${{ matrix.project }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: scripts/push2NuGet.sh
+
     - name: Pre-Release
       if: env.GIT_TAG != ''
       env:
@@ -110,28 +122,6 @@ jobs:
         fi
 
         gh release create $GIT_TAG --title "Release $GIT_TAG" --prerelease $BIN
-
-    - name: Setup NuGet.exe
-      uses: nuget/setup-nuget@v1
-      with:
-        nuget-version: latest
-
-    - name: Push to NuGet
-      if: env.GIT_TAG != '' && matrix.binary == 'dll'
-      env:
-        PROJECT: ${{ matrix.project }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        version=$(echo $GIT_TAG | grep -o '[0-9].*')
-        suffix=$(echo $version | grep -o '\-beta' | tr "-" ".")
-        version=${version%-beta}
-
-        nuget sources add -name "Github" \
-              -Source https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json \
-              -Username $GITHUB_REPOSITORY_OWNER \
-              -Password $GITHUB_TOKEN
-        nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$version;id=$PROJECT$suffix"
-        nuget push $PROJECT$suffix.$version.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
 
     - name: Upload version as artifacts
       uses: actions/upload-artifact@v2
