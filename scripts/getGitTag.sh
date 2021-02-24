@@ -1,12 +1,15 @@
 #!/bin/bash
 
 suffix=
+excludes=
 branch=${GITHUB_REF##*/}
 echo $branch
 
 if [[ $branch == "development" ]]
 then
     suffix="-beta"
+else
+    excludes="--exclude '*-beta'"
 fi
 
 echo "Suffix: $suffix"
@@ -19,7 +22,7 @@ then
 fi
 echo "Binary Version: $version"
 
-PREVIOUS=$(git describe --match "$PREFIX$version-[0-9]*$suffix" --tags --abbrev=0 2> /dev/null)
+PREVIOUS=$(git describe --match "$PREFIX$version-[0-9]*" $excludes --tags --abbrev=0 2> /dev/null)
 echo "Previous: $PREVIOUS"
 
 if [ -z "$PREVIOUS" ]
