@@ -742,7 +742,8 @@ namespace HunterPie
                 presence = new Presence(game);
                 if (offlineMode)
                     presence.SetOfflineMode();
-                presence.StartRPC();
+
+                presence.Initialize();
             }
 
             // Starts scanning
@@ -1219,8 +1220,20 @@ namespace HunterPie
             ChangeConsoleChild(sender, PluginDisplay.Instance);
         }
 
+        public void OpenSettingsForOwner(string name)
+        {
+            SettingsControl.Instantiate(PluginManager.PluginSettingsTabs);
+
+            ChangeConsoleChild(SettingsBtn, SettingsControl.Instance);
+            SettingsControl.Instance.OpenSettingsForOwner(name);
+        }
+
         private void ChangeConsoleChild(object sender, UIElement newChild)
         {
+            // Ignore if the current selected tab is already open
+            if (ConsolePanel.Children.Contains(newChild))
+                return;
+
             // if sender is button, depress all other buttons
             if (sender is SideButton {Parent: StackPanel panel} snd)
             {

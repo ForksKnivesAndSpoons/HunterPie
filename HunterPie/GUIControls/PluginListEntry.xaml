@@ -8,50 +8,94 @@
              xmlns:converters="clr-namespace:HunterPie.UI.Infrastructure.Converters;assembly=HunterPie.UI"
              xmlns:strings="clr-namespace:HunterPie.Infrastructure.Strings;assembly=HunterPie.UI"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance plugins:IPluginViewModel, IsDesignTimeCreatable=False}"
-             d:DesignWidth="350">
+             d:DesignWidth="400"
+             d:DataContext="{d:DesignInstance plugins:IPluginViewModel, IsDesignTimeCreatable=False}">
     <Grid>
+
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" MaxWidth="50"/>
+
             <ColumnDefinition Width="*" MinWidth="150" />
+
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto">
+                <RowDefinition.Style>
+                    <Style TargetType="RowDefinition">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" Value="False">
+                                <Setter Property="Height" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>
+            </RowDefinition>
+        </Grid.RowDefinitions>
+
         <!-- image -->
-        <Grid HorizontalAlignment="Center" Width="50" Height="50" VerticalAlignment="Center">
+        <Grid Height="50" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <Image Panel.ZIndex="1" Source="{StaticResource ICON_PLUGIN}"
                    Visibility="{Binding HasImage, Converter={converters:BooleanToVisibilityConverter FalseValue=Visible, TrueValue=Collapsed}}"
-                   HorizontalAlignment="Center" Width="25" VerticalAlignment="Center" />
-            <Image HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="50" MaxHeight="50" Source="{Binding Image}" IsHitTestVisible="False" />
+                   Width="50" Height="25"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <Image HorizontalAlignment="Center" VerticalAlignment="Center" Source="{Binding Image}"
+                    IsHitTestVisible="False" />
         </Grid>
 
         <!-- name, description, subtext -->
         <StackPanel Grid.Column="1" Margin="5,0,0,0">
+            <!-- header-->
             <TextBlock TextWrapping="Wrap" FontSize="16" FontFamily="Roboto, Segoe UI" FontWeight="Medium" Foreground="WhiteSmoke" Text="{Binding Name}" />
-            <TextBlock TextWrapping="Wrap" FontSize="13" FontFamily="Roboto, Segoe UI" Foreground="WhiteSmoke" Text="{Binding Description}"/>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
-                <Image Source="{StaticResource ICON_DOWNLOAD_GRAY}" Width="10" Height="10" Margin="0,1,2,0" />
-                <TextBlock FontSize="12" FontFamily="Roboto, Segoe UI" FontWeight="Medium" Foreground="Gray"
-                           Text="{Binding SubText}"/>
-            </StackPanel>
+
+            <!-- description-->
+            <TextBlock TextWrapping="Wrap" FontSize="13" FontFamily="Roboto, Segoe UI" Foreground="{StaticResource GENERIC_BUTTON_FOREGROUND}" Text="{Binding Description}"/>
+
         </StackPanel>
 
+        <!-- subtext-->
+        <WrapPanel Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Top" Orientation="Horizontal" Margin="5,0,0,0">
+            <WrapPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{StaticResource GENERIC_SUBTEXT_FOREGROUND}" />
+                    <Setter Property="FontWeight" Value="Medium" />
+                    <Setter Property="FontSize" Value="12" />
+                    <Setter Property="FontFamily" Value="Roboto, Segoe UI" />
+                </Style>
+            </WrapPanel.Resources>
+
+            <StackPanel Orientation="Horizontal" ToolTip="{Binding LastUpdateLong}"
+                        Visibility="{Binding LastUpdateShort, Converter={converters:StringPresenceToVisibilityConverter IfHasValue=Visible}, TargetNullValue=Collapsed}">
+                <Image Source="{StaticResource ICON_CALENDAR}"  VerticalAlignment="Top" Width="10" Height="10" Margin="0,3,4,0"/>
+
+                <TextBlock TextWrapping="Wrap" Text="{Binding LastUpdateShort}"/>
+                <TextBlock Text=" | "/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Image Source="{StaticResource ICON_DOWNLOAD_GRAY}" VerticalAlignment="Top" Width="10" Height="10" Margin="0,4,2,0" />
+
+                <TextBlock TextWrapping="Wrap" Text="{Binding SubText}"/>
+            </StackPanel>
+        </WrapPanel>
+
         <!-- buttons -->
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,5,0">
+        <StackPanel Grid.Column="2" Grid.RowSpan="2" Orientation="Horizontal" Margin="0,0,5,0">
 
             <!--remove-->
             <customControls:FlatButton Icon="{StaticResource ICON_REMOVE}" Width="30"
                                        Visibility="{Binding CanDelete, Converter={converters:BooleanToVisibilityConverter FalseValue=Collapsed}}"
                                        ToolTip="{strings:GetString MESSAGE_PLUGIN_DELETE}"
-                                       Command="{Binding DeleteCommand}">
-            </customControls:FlatButton>
+                                       Command="{Binding DeleteCommand}"/>
 
             <!--restore-->
             <customControls:FlatButton Icon="{StaticResource ICON_UNDO}" Width="30"
                                        Visibility="{Binding CanRestore, Converter={converters:BooleanToVisibilityConverter FalseValue=Collapsed}}"
                                        ToolTip="{strings:GetString MESSAGE_PLUGIN_RESTORE}"
-                                       Command="{Binding RestoreCommand}">
-            </customControls:FlatButton>
+                                       Command="{Binding RestoreCommand}"/>
 
             <!--download-->
             <customControls:FlatButton Icon="{StaticResource ICON_DOWNLOAD}" Width="30"
@@ -71,7 +115,6 @@
                     </Style>
                 </customControls:FlatButton.Resources>
             </customControls:FlatButton>
-
 
             <!--busy-->
             <Grid Width="30" Height="30"
@@ -95,6 +138,42 @@
                                      Visibility="{Binding CanToggle, Converter={converters:BooleanToVisibilityConverter FalseValue=Collapsed}}"
                                      Width="53" HorizontalAlignment="Right" VerticalAlignment="Center"
                                      DockPanel.Dock="Right" />
+        </StackPanel>
+
+        <!--extended members-->
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Vertical">
+
+            <!--top line-->
+            <Rectangle Fill="{StaticResource GENERIC_SUBTEXT_FOREGROUND}" HorizontalAlignment="Stretch" Height="1" Margin="0,5,0,0" VerticalAlignment="Top"  Visibility="{Binding IsExpanded,
+                Converter={converters:BooleanToVisibilityConverter FalseValue=Collapsed},
+                RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"/>
+
+            <!--buttons-->
+
+            <ItemsControl Margin="0,5,10,5" Visibility="{Binding IsExpanded,
+                Converter={converters:BooleanToVisibilityConverter FalseValue=Collapsed},
+                RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"
+                          ItemsSource="{Binding Actions}"
+                          HorizontalContentAlignment="Center" HorizontalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <customControls:AlignableWrapPanel HorizontalContentAlignment="Center">
+                            <customControls:AlignableWrapPanel.LayoutTransform>
+                                <ScaleTransform ScaleX=".8" ScaleY=".8"></ScaleTransform>
+                            </customControls:AlignableWrapPanel.LayoutTransform>
+                        </customControls:AlignableWrapPanel>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="plugins:PluginActionViewModel">
+                        <customControls:FlatButton ToolTip="{Binding Name}"
+                                                   IconBinding="{Binding Icon}"
+                                                   Command="{Binding Command}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
         </StackPanel>
     </Grid>
 </UserControl>
