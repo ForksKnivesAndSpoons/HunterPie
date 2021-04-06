@@ -31,6 +31,9 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Omit Native
+      run: sed '/Native/{N;d;}' -i HunterPie.sln
+
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the applications
       shell: pwsh
