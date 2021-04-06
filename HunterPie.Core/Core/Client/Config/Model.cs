@@ -49,6 +49,7 @@ namespace HunterPie.Core.Settings
         public DPSMeter DPSMeter { get; set; } = new DPSMeter();
         public AbnormalitiesWidget AbnormalitiesWidget { get; set; } = new AbnormalitiesWidget();
         public ClassesWidget ClassesWidget { get; set; } = new ClassesWidget();
+        public NotificationsWidget NotificationsWidget { get; set; } = new NotificationsWidget();
     }
 
     public class PlayerHealthComponent : IWidgetSettings
@@ -71,6 +72,7 @@ namespace HunterPie.Core.Settings
         public double Scale { get; set; } = 1;
         public string HealthTextFormat { get; set; } = "{Health:0}/{TotalHealth:0} ({Percentage:0}%)";
         public bool HideHealthInformation { get; set; } = false;
+        public bool EnableNameOwofy { get; set; } = false;
         public byte ShowMonsterBarMode { get; set; } = 0;
         public string SwitchMonsterBarModeHotkey = "Alt+Up";
         public int[] Position { get; set; } = new int[] { 335, 10 };
@@ -155,6 +157,16 @@ namespace HunterPie.Core.Settings
         public float Opacity { get; set; } = 1;
         public float BackgroundOpacity { get; set; } = 0.7f;
         public bool ShowNames { get; set; } = false;
+        public bool StreamerMode { get; set; } = false;
+    }
+
+    public class NotificationsWidget : IWidgetSettings
+    {
+        public bool Initialize { get; set; } = true;
+        public bool Enabled { get; set; } = true;
+        public int[] Position { get; set; } = { 1370, 680 };
+        public float Opacity { get; set; } = 1;
+        public double Scale { get; set; } = 1;
         public bool StreamerMode { get; set; } = false;
     }
 

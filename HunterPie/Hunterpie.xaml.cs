@@ -748,6 +748,7 @@ namespace HunterPie
 
             // Starts scanning
             game.StartScanning();
+
         }
 
         private async Task InitializeNative()
@@ -906,7 +907,7 @@ namespace HunterPie
 
             await pluginManager.PreloadPlugins();
             // Support message :)
-            ShowSupportMessage();
+            //ShowSupportMessage();
 
             StartEverything();
         }

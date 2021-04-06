@@ -152,6 +152,7 @@ namespace HunterPie.GUIControls
             // Monsters
             settingsUI.switchInitializeMonsterWidget.IsEnabled = settings.Overlay.MonstersComponent.Initialize;
             settingsUI.switchEnableMonsterComponent.IsEnabled = settings.Overlay.MonstersComponent.Enabled;
+            settingsUI.switchEnableOwOfy.IsEnabled = settings.Overlay.MonstersComponent.EnableNameOwofy;
             settingsUI.switchEnableMonsterStreamerMode.IsEnabled = settings.Overlay.MonstersComponent.StreamerMode;
             settingsUI.switchEnableMonsterAction.IsEnabled = settings.Overlay.MonstersComponent.ShowMonsterActionName;
             settingsUI.switchSortParts.IsEnabled = settings.Overlay.MonstersComponent.EnableSortParts;
@@ -279,7 +280,11 @@ namespace HunterPie.GUIControls
             settingsUI.switchHBGHelper.IsEnabled = settings.Overlay.ClassesWidget.HeavyBowgunHelper.Enabled;
             settingsUI.switchLBGHelper.IsEnabled = settings.Overlay.ClassesWidget.LightBowgunHelper.Enabled;
 
-
+            // Notifications
+            settingsUI.switchEnableNotifications.IsEnabled = settings.Overlay.NotificationsWidget.Enabled;
+            settingsUI.switchNotificationsInitialize.IsEnabled = settings.Overlay.NotificationsWidget.Initialize;
+            settingsUI.NotificationsWidgetOpacity.Value = settings.Overlay.NotificationsWidget.Opacity;
+            settingsUI.switchNotificationStreamerMode.IsEnabled = settings.Overlay.NotificationsWidget.StreamerMode;
         }
 
         private async void saveSettings_Click(object sender, RoutedEventArgs e)
@@ -339,6 +344,7 @@ namespace HunterPie.GUIControls
             // Monsters
             settings.Overlay.MonstersComponent.Initialize = settingsUI.switchInitializeMonsterWidget.IsEnabled;
             settings.Overlay.MonstersComponent.Enabled = settingsUI.switchEnableMonsterComponent.IsEnabled;
+            settings.Overlay.MonstersComponent.EnableNameOwofy = settingsUI.switchEnableOwOfy.IsEnabled;
             settings.Overlay.MonstersComponent.StreamerMode = settingsUI.switchEnableMonsterStreamerMode.IsEnabled;
             settings.Overlay.MonstersComponent.ShowMonsterActionName = settingsUI.switchEnableMonsterAction.IsEnabled;
             settings.Overlay.MonstersComponent.EnableSortParts = settingsUI.switchSortParts.IsEnabled;
@@ -463,6 +469,12 @@ namespace HunterPie.GUIControls
                 settings.Overlay.AbnormalitiesWidget.BarPresets[i].Enabled = abnormBar.Enabled;
                 i++;
             }
+
+            // Notifications
+            settings.Overlay.NotificationsWidget.Enabled = settingsUI.switchEnableNotifications.IsEnabled;
+            settings.Overlay.NotificationsWidget.Initialize = settingsUI.switchNotificationsInitialize.IsEnabled;
+            settings.Overlay.NotificationsWidget.Opacity = (float)settingsUI.NotificationsWidgetOpacity.Value;
+            settings.Overlay.NotificationsWidget.StreamerMode = settingsUI.switchNotificationStreamerMode.IsEnabled;
 
             // save data from plugin tabs
             // TODO: notify user

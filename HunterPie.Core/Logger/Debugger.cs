@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Threading;
+using HunterPie.Utils;
 using Newtonsoft.Json;
 
 namespace HunterPie.Logger

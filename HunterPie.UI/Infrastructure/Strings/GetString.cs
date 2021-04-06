@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Markup;
 using HunterPie.Core;
+using HunterPie.Utils;
 
 namespace HunterPie.Infrastructure.Strings
 {
