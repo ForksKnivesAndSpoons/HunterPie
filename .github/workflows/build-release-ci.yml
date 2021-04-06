@@ -85,7 +85,6 @@ jobs:
       env:
         PROJECT: ${{ matrix.project }}
         PREFIX: ${{ matrix.prefix }}
-        BINARY: ${{ matrix.binary }}
       run: scripts/getGitTag.sh
 
     - name: Prep binaries for release
@@ -99,6 +98,7 @@ jobs:
         7z a -tzip $PROJECT.zip HunterPie/* -r
 
     - name: Setup NuGet.exe
+      if: env.GIT_TAG != '' && matrix.binary == 'dll'
       uses: nuget/setup-nuget@v1
       with:
         nuget-version: latest
