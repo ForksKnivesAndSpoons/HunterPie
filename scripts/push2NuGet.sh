@@ -23,7 +23,7 @@ echo "prefix: $prefix"
 echo "suffix: $suffix"
 echo "version: $version"
 
-echo "bumping $semver..."
+echo "bumpNuGetPkg.py $previous $version $semver"
 semver=$(python3 scripts/bumpNuGetPkg.py $previous $version $semver)
 echo "bumped to $semver"
 
