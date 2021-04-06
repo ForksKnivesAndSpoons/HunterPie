@@ -36,3 +36,4 @@ fi
 echo "GIT_TAG=$GIT_TAG"
 echo "$GIT_TAG" > version
 echo "GIT_TAG=$GIT_TAG" >> $GITHUB_ENV
+echo "PREVIOUS_TAG=$PREVIOUS" >> $GITHUB_ENV
