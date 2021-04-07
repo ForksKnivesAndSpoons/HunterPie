@@ -18,7 +18,7 @@ echo "Excludes: $excludes"
 version=$(cat $PROJECT/Properties/AssemblyInfo.cs | grep "^\[assembly: AssemblyVersion" | cut -d'"' -f2)
 echo "Assembly Version: $version"
 
-PREVIOUS=$(git describe --match "$PREFIX$version-[0-9]*" --tags --abbrev=0 --exclude "$excludes" 2> /dev/null)
+PREVIOUS=$(git describe --match "$PREFIX$version-[0-9]*$suffix" --tags --abbrev=0 --exclude "$excludes" 2> /dev/null)
 echo "Previous: $PREVIOUS"
 
 if [ -z "$PREVIOUS" ]
