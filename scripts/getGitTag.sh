@@ -26,12 +26,12 @@ then
     GIT_TAG="$PREFIX$version-0$suffix"
     PREVIOUS=$(git describe --match "$PREFIX[0-9]*.[0-9]*.[0-9]*.[0-9]*-[0-9]*$suffix" --tags --abbrev=0 --exclude "$excludes" 2> /dev/null)
 else
-    if [ -n "$(git diff --name-only $PREVIOUS..HEAD -- $PROJECT/)" ]
-    then
+    # if [ -n "$(git diff --name-only $PREVIOUS..HEAD -- $PROJECT/)" ]
+    # then
     bump=$(echo ${PREVIOUS%-beta} | rev | cut -d'-' -f1)
     ((bump++))
     GIT_TAG="$PREFIX$version-$bump$suffix"
-    fi
+    # fi
 fi
 
 echo "GIT_TAG=$GIT_TAG"
