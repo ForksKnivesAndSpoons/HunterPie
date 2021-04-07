@@ -24,6 +24,7 @@ echo "Previous: $PREVIOUS"
 if [ -z "$PREVIOUS" ]
 then
     GIT_TAG="$PREFIX$version-0$suffix"
+    PREVIOUS=$(git describe --match "$PREFIX[0-9]*.[0-9]*.[0-9]*.[0-9]*-[0-9]*$suffix" --tags --abbrev=0 --exclude "$excludes" 2> /dev/null)
 else
     if [ -n "$(git diff --name-only $PREVIOUS..HEAD -- $PROJECT/)" ]
     then
