@@ -814,7 +814,10 @@ namespace HunterPie
             presence?.Dispose();
             presence = null;
 
-            game?.StopScanning();
+            // For some reason it crashes here if we stop scanning when the game is closed before it is initialized?
+            try { game?.StopScanning(); }
+            catch {}
+
             await Dispatcher.InvokeAsync(async () =>
             {
                 if (overlay is null)
@@ -1074,7 +1077,7 @@ namespace HunterPie
                 SecondButtonVisibility = Visibility.Visible,
                 Callback1 = new Action(() =>
                 {
-                    Process.Start("https://server.hunterpie.me/donate");
+                    Process.Start("https://server.haato.dev/donate");
                 }),
                 Callback2 = new Action(() =>
                 {
