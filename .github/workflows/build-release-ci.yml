@@ -63,6 +63,12 @@ jobs:
         name: Hunter Pie Release
         path: ./**/bin/*
 
+    - name: Upload manifests
+      uses: actions/upload-artifact@v2
+      with:
+        name: Hunter Pie Manifests
+        path: ./**/tools/*
+
   pre-release:
     needs: build
     runs-on: ubuntu-latest
@@ -92,6 +98,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: Hunter Pie Release
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: Hunter Pie Manifests
 
     - name: Determine new tag
       env:
