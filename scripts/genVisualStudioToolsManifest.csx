@@ -5,7 +5,13 @@ using System.Windows;
 using System.Xml;
 using HunterPie.GUI;
 
-using (var writer = XmlWriter.Create("HunterPie.UI/tools/VisualStudioToolsManifest.xml")) {
+var settings = new XmlWriterSettings();
+settings.OmitXmlDeclaration = true;
+settings.Indent = true;
+settings.NewLineChars = "\n";
+
+
+using (var writer = XmlWriter.Create("HunterPie.UI/tools/VisualStudioToolsManifest.xml", settings)) {
     writer.WriteStartElement("FileList");
 
     writer.WriteStartElement("File");
