@@ -16,4 +16,8 @@
       <group targetFramework=".NETFramework4.8" />
     </dependencies>
   </metadata>
+
+  <files>
+    <file src="tools/VisualStudioToolsManifest.xml" target="tools"/>
+  </files>
 </package>

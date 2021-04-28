@@ -513,9 +513,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
-
   <ItemGroup>
-    <None Include="VisualStudioToolsManifest.xml" Pack="true" PackagePath="tools" />
+    <None Include="tools\VisualStudioToolsManifest.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
