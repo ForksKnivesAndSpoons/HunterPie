@@ -39,6 +39,18 @@ jobs:
       shell: pwsh
       run: msbuild -m /t:Restore
 
+    - name: Build HunterPie.UI for manifest
+      shell: pwsh
+      run: msbuild HunterPie.UI /p:Configuration=Debug
+
+    - name: Generate UI manifest
+      run: |
+        nuget install Microsoft.Net.Compilers.Toolset -OutputDirectory packages -Version 3.9.0-2.final
+        CSI="packages/Microsoft.Net.Compilers.Toolset.3.9.0-2.final/tasks/net472/csi.exe"
+
+        mkdir -p HunterPie.UI/tools
+        $CSI scripts/genVisualStudioToolsManifest.csx
+
     - name: Build the apps
       shell: pwsh
       run: msbuild -m /p:Configuration=Release
