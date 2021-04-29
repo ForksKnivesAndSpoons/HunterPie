@@ -513,6 +513,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
+
   <ItemGroup>
     <None Include="tools\VisualStudioToolsManifest.xml" />
   </ItemGroup>

@@ -33,7 +33,7 @@ nuget sources add -name "Github" \
       -Password $GITHUB_TOKEN
 
 echo "packing $PROJECT$suffix"
-nuget pack $PROJECT -Prop Configuration=Release -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$semver$beta;id=$PROJECT$suffix"
+nuget pack $PROJECT -Build -Prop Configuration=Debug -Properties "repo=$GITHUB_REPOSITORY;nugetVersion=$semver$beta;id=$PROJECT$suffix"
 
 echo "pushing $PROJECT$suffix.$semver$beta.nupkg"
 nuget push $PROJECT$suffix.$semver$beta.nupkg -Source "Github" -ApiKey $GITHUB_TOKEN -SkipDuplicate;
