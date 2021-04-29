@@ -55,10 +55,6 @@ jobs:
       shell: pwsh
       run: msbuild -m /p:Configuration=Release
 
-    - name: Build Debug for NuGet
-      shell: pwsh
-      run: msbuild -m /p:Configuration=Debug
-
     # Upload the builds for next job and debugging
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2

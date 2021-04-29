@@ -18,6 +18,6 @@
   </metadata>
 
   <files>
-    <file src="tools/VisualStudioToolsManifest.xml" target="tools"/>
+    <file src="tools/VisualStudioToolsManifest.xml" target="tools/net48"/>
   </files>
 </package>
