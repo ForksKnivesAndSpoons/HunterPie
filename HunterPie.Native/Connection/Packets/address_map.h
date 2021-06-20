@@ -4,3 +4,14 @@
 #define GAME_HUD_INFO_OFFSET    2
 #define GAME_CHAT_OFFSET        3
 #define FUN_CHAT_SYSTEM         4
+
+namespace Connection
+{
+    namespace Packets
+    {
+        enum AddressIndex {
+            LEVEL_OFFSET = 5,
+            FUN_SET_WISHLIST_MATERIALS,
+        };
+    }
+}

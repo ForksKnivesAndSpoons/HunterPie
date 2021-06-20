@@ -158,6 +158,8 @@
     <ClInclude Include="Game\Chat\chat.h" />
     <ClInclude Include="Game\Handlers.h" />
     <ClInclude Include="Game\Helpers.h" />
+    <ClInclude Include="Game\Wishlist\WishlistHandler.h" />
+    <ClInclude Include="Game\Wishlist\WishlistTypes.h" />
     <ClInclude Include="Game\Input\input.h" />
     <ClInclude Include="Connection\Socket.h" />
     <ClInclude Include="Connection\Packets\Definitions.h" />
@@ -171,6 +173,7 @@
     <ClCompile Include="Game\Chat\chat.cpp" />
     <ClCompile Include="Game\Handlers.cpp" />
     <ClCompile Include="Game\Input\input.cpp" />
+    <ClCompile Include="Game\Wishlist\WishlistHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="libs\MinHook\libMinHook.x64.lib" />

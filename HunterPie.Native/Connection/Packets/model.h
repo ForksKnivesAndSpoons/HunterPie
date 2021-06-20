@@ -14,6 +14,7 @@ namespace Connection
             QueueInput,
             SendChatMessage,
             SendSystemMessage,
+            GetWishlistMaterials,
         };
 
         typedef struct header
