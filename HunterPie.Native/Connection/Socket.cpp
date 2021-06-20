@@ -102,6 +102,9 @@ bool Connection::Server::initialize()
 
 void AssignPointers(uintptr_t arr[128])
 {
+    for(auto& handler : packetHandlers) {
+        handler->LoadAddress(arr);
+    }
     Game::Chat::LoadAddress(arr);
     Game::Input::LoadAddress(arr);
 }
@@ -190,6 +193,16 @@ void Connection::Server::receivePackets(char buffer[DEFAULT_BUFFER_SIZE])
             Game::Chat::SendSystemMessage(pkt.message, pkt.unk1, pkt.unk2, pkt.unk3);
             break;
         }
+
+        default:
+        {
+            for(auto& handler : packetHandlers) {
+                if(handler->receivePackets(packet)){
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -216,6 +229,9 @@ void Connection::Server::enableHooks()
         return;
 
     MH_Initialize();
+    for(auto& handler : packetHandlers) {
+        handler->InitializeHooks();
+    }
     Game::Input::InitializeHooks();
 
     MH_EnableHook(MH_ALL_HOOKS);
@@ -251,4 +267,3 @@ Server& Connection::Server::operator=(Server const&)
 {
     return *this;
 }
-

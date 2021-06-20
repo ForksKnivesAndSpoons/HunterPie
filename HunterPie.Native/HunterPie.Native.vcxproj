@@ -53,10 +53,8 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings"></ImportGroup>
+  <ImportGroup Label="Shared"></ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -154,9 +152,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Connection\IPacketHandler.h" />
     <ClInclude Include="Connection\Logger.h" />
     <ClInclude Include="Connection\Packets\address_map.h" />
     <ClInclude Include="Game\Chat\chat.h" />
+    <ClInclude Include="Game\Handlers.h" />
     <ClInclude Include="Game\Helpers.h" />
     <ClInclude Include="Game\Input\input.h" />
     <ClInclude Include="Connection\Socket.h" />
@@ -169,6 +169,7 @@
     <ClCompile Include="Connection\Socket.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Game\Chat\chat.cpp" />
+    <ClCompile Include="Game\Handlers.cpp" />
     <ClCompile Include="Game\Input\input.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +179,5 @@
     <ResourceCompile Include="HunterPie.Native.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets"></ImportGroup>
 </Project>

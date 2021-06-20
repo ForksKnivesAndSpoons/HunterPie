@@ -1,5 +1,6 @@
 #pragma once
 #include "Connection/Socket.h"
+#include "Game/Handlers.h"
 
 using namespace Connection;
 
@@ -13,8 +14,9 @@ void LoadNativeDll()
         FILE* newStdout;
         freopen_s(&newStdout, "CONOUT$", "w", stdout);
 #endif
+        Game::addPacketHandlers();
         Server::getInstance()->initialize();
-            
+
     }).detach();
 
 }
@@ -36,4 +38,3 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
-

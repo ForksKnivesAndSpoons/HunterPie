@@ -2,16 +2,20 @@
 #define WIN32_LEAN_NO_MEAN
 #pragma once
 #include <WinSock2.h>
+#include <memory>
 #include <mutex>
 #include <queue>
+#include <vector>
+#include "IPacketHandler.h"
 #include "Packets/Definitions.h"
 #include <ws2tcpip.h>
 #include "Logger.h"
 #pragma comment (lib, "ws2_32.lib")
 
-
 namespace Connection
 {
+    static std::vector<std::unique_ptr<IPacketHandler>> packetHandlers;
+
     class Server
     {
     public:
@@ -23,7 +27,7 @@ namespace Connection
         void sendData(void* data, int size);
 
         bool initialize();
-        
+
     private:
         Server();
         Server(Server const&);

@@ -18,6 +18,9 @@
     <ClInclude Include="Game\Input\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Connection\IPacketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Connection\Packets\Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -36,6 +39,9 @@
     <ClInclude Include="Game\Chat\chat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Handlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Game\Helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,6 +54,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Handlers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game\Input\input.cpp">
