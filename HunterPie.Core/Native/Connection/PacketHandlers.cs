@@ -12,7 +12,10 @@ namespace HunterPie.Native.Connection
             {
                 lock (locke)
                 {
-                    return instance ?? (instance = new(new() { }));
+                    return instance ?? (instance = new(new()
+                    {
+                        new Game.Wishlist.WishlistHandler(),
+                    }));
                 }
             }
         }

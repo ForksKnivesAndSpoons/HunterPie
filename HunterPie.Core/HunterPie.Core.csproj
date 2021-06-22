@@ -195,6 +195,8 @@
     <Compile Include="Native\Connection\Packets\PacketParser.cs" />
     <Compile Include="Native\Connection\Packets\Definitions.cs" />
     <Compile Include="Native\Connection\Packets\Opcodes.cs" />
+    <Compile Include="Native\Game\Wishlist\WishlistHandler.cs" />
+    <Compile Include="Native\Game\Wishlist\WishlistPackets.cs" />
     <Compile Include="Native\Injector.cs" />
     <Compile Include="Notifications\INotificationsService.cs" />
     <Compile Include="Notifications\NotificationModel.cs" />

@@ -83,6 +83,8 @@ namespace HunterPie.Native.Connection
                 connectPacket.addresses[2] = (UIntPtr)GetAbsoluteAddress("GAME_HUD_INFO_OFFSET");
                 connectPacket.addresses[3] = (UIntPtr)GetAbsoluteAddress("GAME_CHAT_OFFSET");
                 connectPacket.addresses[4] = (UIntPtr)GetAbsoluteAddress("FUN_CHAT_SYSTEM");
+                connectPacket.addresses[5] = (UIntPtr)GetAbsoluteAddress("LEVEL_OFFSET");
+                connectPacket.addresses[6] = (UIntPtr)GetAbsoluteAddress("FUN_SET_WISHLIST_MATERIALS");
 
                 await SendAsync(connectPacket);
             }
