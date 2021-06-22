@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace HunterPie.Core.Definitions
 {
-    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    [StructLayout(LayoutKind.Sequential, Size = 24)]
     public struct sWishlistEntry : IEquatable<sWishlistEntry>
     {
         public long vPtr;

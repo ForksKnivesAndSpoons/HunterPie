@@ -8,7 +8,7 @@ namespace HunterPie.Native.Game.Wishlist
     public struct C_GetWishlistMaterials
     {
         public Header header;
-
+        public long id;
         public int index;
     }
 
@@ -16,6 +16,7 @@ namespace HunterPie.Native.Game.Wishlist
     public struct S_GetWishlistMaterials
     {
         public Header header;
+        public long id;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public sItem[] materials;

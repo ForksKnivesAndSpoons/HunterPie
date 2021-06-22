@@ -28,6 +28,7 @@ namespace Game
                 auto request = reinterpret_cast<C_GetWishlistMaterials*>(&packet);
                 S_GetWishlistMaterials response;
                 response.header.opcode = OPCODE::GetWishlistMaterials;
+                response.id = request->id;
 
                 getMaterials(request->index, response);
                 Server::getInstance()->sendData(&response, sizeof(response));

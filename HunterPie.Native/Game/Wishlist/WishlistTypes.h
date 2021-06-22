@@ -23,11 +23,13 @@ namespace Game
 
         struct C_GetWishlistMaterials : Connection::Packets::I_PACKET
         {
+            long long id;
             int index;
         };
 
         struct S_GetWishlistMaterials : Connection::Packets::I_PACKET
         {
+            long long id;
             sItem materials[4];
         };
     }
