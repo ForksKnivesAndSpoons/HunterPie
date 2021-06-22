@@ -14,7 +14,7 @@ namespace Game
 
         void WishlistHandler::getMaterials(int index, S_GetWishlistMaterials& response) {
             auto that = ((long long)&response.materials[0]) - 0x2f10;
-            auto wishlist = resolvePtrs<WishlistEntry>(saveBase, { 0xa8, 0xe7450 });
+            auto wishlist = getFromCurrentSaveSlot<WishlistEntry>(saveBase, 0xe7450);
             originalGetMaterials(that, (long long)&wishlist[index], 1);
         }
 
