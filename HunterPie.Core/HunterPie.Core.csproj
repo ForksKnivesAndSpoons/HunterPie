@@ -54,8 +54,7 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -191,6 +190,8 @@
     <Compile Include="Core\Party\Party.cs" />
     <Compile Include="Logger\Debugger.cs" />
     <Compile Include="Native\Connection\Client.cs" />
+    <Compile Include="Native\Connection\IPacketHandler.cs" />
+    <Compile Include="Native\Connection\PacketHandlers.cs" />
     <Compile Include="Native\Connection\Packets\PacketParser.cs" />
     <Compile Include="Native\Connection\Packets\Definitions.cs" />
     <Compile Include="Native\Connection\Packets\Opcodes.cs" />

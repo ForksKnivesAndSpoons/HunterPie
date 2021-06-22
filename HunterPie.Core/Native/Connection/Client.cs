@@ -60,7 +60,8 @@ namespace HunterPie.Native.Connection
             try
             {
                 await socket.ConnectAsync(Address, Port);
-            } catch (Exception err)
+            }
+            catch (Exception err)
             {
                 Debugger.Error(err);
                 return false;
@@ -72,7 +73,7 @@ namespace HunterPie.Native.Connection
                 Listen();
                 C_CONNECT connectPacket = new C_CONNECT()
                 {
-                    header = new Header() {opcode = OPCODE.Connect, version = 1},
+                    header = new Header() { opcode = OPCODE.Connect, version = 1 },
                     addresses = new UIntPtr[128]
                 };
 
@@ -95,11 +96,12 @@ namespace HunterPie.Native.Connection
 
             if (packetType?.FieldType == typeof(Header))
             {
-                
+
                 byte[] buffer = PacketParser.Serialize(packet);
 
                 return await SendRawAsync(buffer);
-            } else
+            }
+            else
             {
                 Debugger.Error("Invalid packet");
                 return false;
@@ -116,12 +118,14 @@ namespace HunterPie.Native.Connection
                 await semaphoreSlim.WaitAsync();
 
                 await stream.WriteAsync(buffer, 0, buffer.Length);
-                
+
                 return true;
-            } catch (Exception err)
+            }
+            catch (Exception err)
             {
                 Debugger.Error(err);
-            } finally
+            }
+            finally
             {
                 semaphoreSlim.Release();
             }
@@ -154,36 +158,48 @@ namespace HunterPie.Native.Connection
             switch (packetHeader.opcode)
             {
                 case OPCODE.Connect:
-                {
-                    Log("Received a S_CONNECT");
-                    S_CONNECT pkt = PacketParser.Deserialize<S_CONNECT>(buffer);
-                    
-                    if (Injector.CheckIfCRCBypassExists())
                     {
-                        C_ENABLE_HOOKS enableHooks = new C_ENABLE_HOOKS
+                        Log("Received a S_CONNECT");
+                        S_CONNECT pkt = PacketParser.Deserialize<S_CONNECT>(buffer);
+
+                        if (Injector.CheckIfCRCBypassExists())
                         {
-                            header = new Header { opcode = OPCODE.EnableHooks, version = 1}
-                        };
-                        await SendAsync(enableHooks);
+                            C_ENABLE_HOOKS enableHooks = new C_ENABLE_HOOKS
+                            {
+                                header = new Header { opcode = OPCODE.EnableHooks, version = 1 }
+                            };
+                            await SendAsync(enableHooks);
+                        }
+
+                        return;
                     }
 
-                    return;
-                }
-                    
                 case OPCODE.Disconnect:
-                {
-                    Log("Received a S_DISCONNECT");
-                    break;
-                }
+                    {
+                        Log("Received a S_DISCONNECT");
+                        break;
+                    }
 
                 case OPCODE.QueueInput:
-                {
-                    Log("Received S_QUEUE_INPUT");
-                    S_QUEUE_INPUT pkt = PacketParser.Deserialize<S_QUEUE_INPUT>(buffer);
-                    OnQueueInputResponse?.Invoke(this, pkt);
-                    break;
-                }
-                    
+                    {
+                        Log("Received S_QUEUE_INPUT");
+                        S_QUEUE_INPUT pkt = PacketParser.Deserialize<S_QUEUE_INPUT>(buffer);
+                        OnQueueInputResponse?.Invoke(this, pkt);
+                        break;
+                    }
+                default:
+                    {
+                        foreach (var handler in PacketHandlers.Handlers)
+                        {
+                            if (handler.CanHandlePackets(packetHeader.opcode))
+                            {
+                                handler.HandlePackets(buffer);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+
             }
         }
 
@@ -203,21 +219,22 @@ namespace HunterPie.Native.Connection
                     unk2 = 0,
                     unk3 = 0
                 }).RunSynchronously();
-            } catch {}
+            }
+            catch { }
             finally
             {
                 stream?.Close();
                 socket?.Close();
                 socket?.Dispose();
             }
-            
+
         }
 
         private void Log(object message)
         {
-            #if DEBUG
+#if DEBUG
             Debugger.Write($"[Socket] {message}", "#FFFF59E6");
-            #endif
+#endif
         }
 
         protected virtual void Dispose(bool disposing)
